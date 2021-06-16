@@ -1,6 +1,7 @@
 import { getRepository } from "typeorm";
 import { User } from "../model/User";
 import { hashPass } from "../Utils/password";
+import { sanitization } from "../Utils/security";
 
 interface registerData{
     username: string,
@@ -14,12 +15,15 @@ interface updateData{
     email:string
 }
 
-export async function getAllUsers(): Promise<User[]> {
+export async function getUserById(email: string): Promise<User> {
     const repo = getRepository(User);
-
-    const users = await repo.find();
-
-    return users;
+    try {
+        const user = await repo.findOne(email);
+        if(!user) throw new Error("no user with this email exists"); 
+        return await sanitization(user);
+    } catch (e) {
+        throw e;
+    }
 }
 
 
@@ -37,7 +41,7 @@ export async function registerUsers(data: registerData):Promise<User> {
             await hashPass(data.password)
         ));
 
-        return user;
+        return await sanitization(user);
     } catch (e) {
         throw e
     }
@@ -60,7 +64,7 @@ export async function updateUser(data: updateData, email: string): Promise<User>
         if(data.password) user.password = await hashPass(data.password);
         
         const updatedUser = await repo.save(user);
-        return (updatedUser);
+        return await sanitization(updatedUser);
     } catch (e) {
         throw e;
     }
