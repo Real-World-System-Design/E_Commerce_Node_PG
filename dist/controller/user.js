@@ -1,15 +1,24 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteUser = exports.updateUser = exports.registerUsers = exports.getAllUsers = void 0;
+exports.deleteUser = exports.updateUser = exports.loginUser = exports.registerUsers = exports.getUserByEmail = void 0;
 const typeorm_1 = require("typeorm");
 const User_1 = require("../model/User");
+const jwt_1 = require("../Utils/jwt");
 const password_1 = require("../Utils/password");
-async function getAllUsers() {
+const security_1 = require("../Utils/security");
+async function getUserByEmail(email) {
     const repo = typeorm_1.getRepository(User_1.User);
-    const users = await repo.find();
-    return users;
+    try {
+        const user = await repo.findOne(email);
+        if (!user)
+            throw new Error("no user with this email exists");
+        return await security_1.sanitization(user);
+    }
+    catch (e) {
+        throw e;
+    }
 }
-exports.getAllUsers = getAllUsers;
+exports.getUserByEmail = getUserByEmail;
 async function registerUsers(data) {
     //validation
     if (!data.email)
@@ -21,15 +30,35 @@ async function registerUsers(data) {
     try {
         const repo = typeorm_1.getRepository(User_1.User);
         const user = await repo.save(new User_1.User(data.username, data.email, await password_1.hashPass(data.password)));
-        return user;
+        return await security_1.sanitization(user);
     }
     catch (e) {
         throw e;
     }
 }
 exports.registerUsers = registerUsers;
-// export async function loginUser(): Promise<User> {
-// }
+async function loginUser(data) {
+    //validation
+    if (!data.email)
+        throw new Error("email field is empty");
+    if (!data.password)
+        throw new Error("password field is empty");
+    try {
+        const repo = typeorm_1.getRepository(User_1.User);
+        const user = await repo.findOne(data.email);
+        if (!user)
+            throw new Error("user with this email not found");
+        const passMatch = await password_1.matchPass(data.password, user.password);
+        if (!passMatch)
+            throw new Error("wrong password");
+        user.token = await jwt_1.sign(user);
+        return await security_1.sanitization(user);
+    }
+    catch (e) {
+        throw e;
+    }
+}
+exports.loginUser = loginUser;
 async function updateUser(data, email) {
     try {
         const repo = typeorm_1.getRepository(User_1.User);
@@ -43,7 +72,7 @@ async function updateUser(data, email) {
         if (data.password)
             user.password = await password_1.hashPass(data.password);
         const updatedUser = await repo.save(user);
-        return (updatedUser);
+        return await security_1.sanitization(updatedUser);
     }
     catch (e) {
         throw e;

@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, PrimaryColumn, UpdateDateColumn } from "typeorm";
 
 @Entity("users")
 export class User{
@@ -10,6 +10,14 @@ export class User{
 
     @Column({type: 'text', nullable: true})
     password?: string
+
+    token: string
+
+    @CreateDateColumn({type: 'date'})
+    createdAt: Date
+
+    @UpdateDateColumn({type: 'text'})
+    updatedAt: Date
 
     constructor(username: string, email: string, password: string){
         this.email = email,

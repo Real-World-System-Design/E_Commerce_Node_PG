@@ -1,6 +1,7 @@
 import { getRepository } from "typeorm";
 import { User } from "../model/User";
-import { hashPass } from "../Utils/password";
+import { sign } from "../Utils/jwt";
+import { hashPass, matchPass } from "../Utils/password";
 import { sanitization } from "../Utils/security";
 
 interface registerData{
@@ -9,13 +10,18 @@ interface registerData{
     email:string
 }
 
+interface userLoginData{
+    email: string
+    password: string
+}
+
 interface updateData{
     username: string,
     password: string,
     email:string
 }
 
-export async function getUserById(email: string): Promise<User> {
+export async function getUserByEmail(email: string): Promise<User> {
     const repo = getRepository(User);
     try {
         const user = await repo.findOne(email);
@@ -47,9 +53,22 @@ export async function registerUsers(data: registerData):Promise<User> {
     }
 }
 
-// export async function loginUser(): Promise<User> {
-    
-// }
+export async function loginUser(data: userLoginData): Promise<User> {
+    //validation
+    if(!data.email) throw new Error("email field is empty");
+    if(!data.password) throw new Error("password field is empty");
+    try {
+        const repo = getRepository(User);
+        const user = await repo.findOne(data.email);
+        if(!user) throw  new Error("user with this email not found");
+        const passMatch = await matchPass(data.password, user.password!!);
+        if(!passMatch) throw new Error("wrong password");
+        user.token = await sign(user);
+        return await sanitization(user);
+    } catch (e) {
+        throw e
+    }
+}
 
 export async function updateUser(data: updateData, email: string): Promise<User> {
 

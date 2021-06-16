@@ -9,6 +9,7 @@ const Product_1 = require("./model/Product");
 const User_1 = require("./model/User");
 const allRoute_1 = require("./route/allRoute");
 const app = express_1.default();
+const PORT = process.env.PORT || 4000;
 app.use(express_1.default.json());
 app.use(allRoute_1.allRoutes);
 app.get('/', (req, res) => {
@@ -26,6 +27,6 @@ async function start() {
         logging: true,
         logger: 'advanced-console'
     });
-    app.listen(3000, () => console.log(`http://localhost:3000`));
+    app.listen(PORT, () => console.log(`http://localhost:${PORT}`));
 }
 start();
