@@ -1,6 +1,5 @@
 import {Router} from 'express';
 import { deleteUser, getUserByEmail, loginUser, registerUsers, updateUser } from '../controller/user';
-import { authByToken } from '../middleware/auth';
 
 const route = Router();
 

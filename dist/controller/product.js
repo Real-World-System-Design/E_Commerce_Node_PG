@@ -3,6 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteProduct = exports.updateProductDetails = exports.registerProduct = exports.getProductById = void 0;
 const typeorm_1 = require("typeorm");
 const Product_1 = require("../model/Product");
+const User_1 = require("../model/User");
+const security_1 = require("../Utils/security");
 async function getProductById(id) {
     const repo = typeorm_1.getRepository(Product_1.Product);
     try {
@@ -16,11 +18,15 @@ async function getProductById(id) {
     }
 }
 exports.getProductById = getProductById;
-async function registerProduct(data) {
+async function registerProduct(data, email) {
     //validation
     const repo = typeorm_1.getRepository(Product_1.Product);
+    const userRepo = typeorm_1.getRepository(User_1.User);
     try {
-        const product = await repo.save(new Product_1.Product(data.name, data.price, data.image, data.description));
+        const manufacturer = await userRepo.findOne(email);
+        if (!manufacturer)
+            throw new Error("no manufaturer details found");
+        const product = await repo.save(new Product_1.Product(data.name, data.price, data.image, data.description, await security_1.sanitization(manufacturer)));
         return product;
     }
     catch (e) {

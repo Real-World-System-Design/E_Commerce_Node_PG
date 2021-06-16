@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { User } from "./User";
 
 @Entity('products')
 export class Product {
@@ -17,11 +18,15 @@ export class Product {
     @Column({width: 50, nullable: false, type: 'text'})
     description: string
 
-    constructor(name: string, price: number, image: string, description: string){
+    @ManyToOne(() => User)
+    manufacturer: User
+
+    constructor(name: string, price: number, image: string, description: string, manufacturer: User){
         this.name = name
         this.price = price
         this.image = image
         this.description = description
+        this.manufacturer = manufacturer
     }
 
 }

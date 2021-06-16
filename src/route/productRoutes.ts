@@ -1,5 +1,6 @@
 import {Router} from "express";
 import { deleteProduct, getProductById, registerProduct, updateProductDetails } from "../controller/product";
+import { authByToken } from "../middleware/auth";
 const route = Router();
 
 route.get('/get/:id', async(req, res) => {
@@ -13,9 +14,9 @@ route.get('/get/:id', async(req, res) => {
     }
 });
 
-route.post('/register', async(req, res) => {
+route.post('/register', authByToken,async(req, res) => {
     try {
-        const product = await registerProduct((req as any).body);
+        const product = await registerProduct((req as any).body, (req as any).user.email);
         res.status(200).send(product);
     } catch (e) {
         res.status(400).send({

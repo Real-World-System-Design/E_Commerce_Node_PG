@@ -1,5 +1,7 @@
 import { getRepository } from "typeorm";
 import { Product } from "../model/Product";
+import { User } from "../model/User";
+import { sanitization } from "../Utils/security";
 
 interface productData  {
     name: string
@@ -25,15 +27,19 @@ export async function getProductById(id: number): Promise<Product> {
     }
 }
 
-export async function registerProduct(data: productData): Promise<Product> {
+export async function registerProduct(data: productData, email: string): Promise<Product> {
     //validation
     const repo = getRepository(Product);
+    const userRepo = getRepository(User);
     try {
+        const manufacturer = await userRepo.findOne(email);
+        if(!manufacturer) throw new Error("no manufaturer details found");
         const product = await repo.save(new Product(
             data.name,
             data.price,
             data.image,
-            data.description
+            data.description,
+            await sanitization(manufacturer)
         ));
         return product;
     } catch (e) {

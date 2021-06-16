@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.productRoute = void 0;
 const express_1 = require("express");
 const product_1 = require("../controller/product");
+const auth_1 = require("../middleware/auth");
 const route = express_1.Router();
 route.get('/get/:id', async (req, res) => {
     try {
@@ -15,9 +16,9 @@ route.get('/get/:id', async (req, res) => {
         });
     }
 });
-route.post('/register', async (req, res) => {
+route.post('/register', auth_1.authByToken, async (req, res) => {
     try {
-        const product = await product_1.registerProduct(req.body);
+        const product = await product_1.registerProduct(req.body, req.user.email);
         res.status(200).send(product);
     }
     catch (e) {
