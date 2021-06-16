@@ -1,8 +1,11 @@
 import express from 'express';
 import { createConnection } from 'typeorm';
+import { Product } from './model/Product';
 import { User } from './model/User';
 import {allRoutes} from './route/allRoute';
 const app = express();
+
+const PORT = process.env.PORT || 4000;
 
 app.use(express.json() as any);
 
@@ -19,11 +22,11 @@ async function start() {
         password: 'product',
         database: 'product',
         synchronize: true,
-        entities: [User],
+        entities: [User, Product],
         dropSchema: true,
         logging: true,
         logger: 'advanced-console'
     })
-    app.listen(3000, () => console.log(`http://localhost:3000`));
+    app.listen(PORT, () => console.log(`http://localhost:${PORT}`));
 }
 start();
